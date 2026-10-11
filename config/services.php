@@ -35,17 +35,17 @@ return [
         ],
     ],
     'google_places' => [
-        'key'           => env('GOOGLE_PLACES_KEY'),
+        'key' => env('GOOGLE_PLACES_KEY'),
         'monthly_limit' => (int) env('PLACES_MONTHLY_LIMIT', 900),
     ],
     'whatsapp' => [
-        'token'           => env('WHATSAPP_TOKEN'),
+        'token' => env('WHATSAPP_TOKEN'),
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
-        'version'         => env('WHATSAPP_API_VERSION', 'v23.0'),
-        'template'        => env('WHATSAPP_TEMPLATE'),
-        'template_lang'   => env('WHATSAPP_TEMPLATE_LANG', 'pt_BR'),
-        'verify_token'    => env('WHATSAPP_VERIFY_TOKEN'),
-        'app_secret'      => env('WHATSAPP_APP_SECRET'),
+        'version' => env('WHATSAPP_API_VERSION', 'v23.0'),
+        'template' => env('WHATSAPP_TEMPLATE'),
+        'template_lang' => env('WHATSAPP_TEMPLATE_LANG', 'pt_BR'),
+        'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),
+        'app_secret' => env('WHATSAPP_APP_SECRET'),
     ],
 
 ];
