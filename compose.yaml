@@ -4,8 +4,7 @@ services:
     env_file: .env
     environment:
       AUTORUN_ENABLED: "true"   # roda migrate --force e os caches ao subir
-    ports:
-      - "8080:8080"
+    # sem "ports": em produção só o Caddy fala com o app; localmente a porta 8080 vem do compose.override.yaml
     volumes:
       - storage:/var/www/html/storage
     depends_on:
@@ -54,6 +53,24 @@ services:
       retries: 20
     restart: unless-stopped
 
+  # só em produção: docker compose --profile prod up -d --build
+  caddy:
+    image: caddy:2
+    profiles: ["prod"]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    restart: unless-stopped
+
 volumes:
   storage:
   mysql:
+  caddy_data:
+  caddy_config:
