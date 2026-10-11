@@ -1,0 +1,59 @@
+services:
+  app:
+    build: .
+    env_file: .env
+    environment:
+      AUTORUN_ENABLED: "true"   # roda migrate --force e os caches ao subir
+    ports:
+      - "8080:8080"
+    volumes:
+      - storage:/var/www/html/storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  queue:
+    build: .
+    env_file: .env
+    command: ["php", "/var/www/html/artisan", "queue:work", "--tries=1", "--max-time=3600"]
+    stop_signal: SIGTERM
+    healthcheck:
+      test: ["CMD", "healthcheck-queue"]
+      start_period: 10s
+    volumes:
+      - storage:/var/www/html/storage
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  scheduler:
+    build: .
+    env_file: .env
+    command: ["php", "/var/www/html/artisan", "schedule:work"]
+    stop_signal: SIGTERM
+    healthcheck:
+      test: ["CMD", "healthcheck-schedule"]
+      start_period: 10s
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  storage:
+  mysql:
