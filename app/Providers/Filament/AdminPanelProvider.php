@@ -10,13 +10,15 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Width;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -28,6 +30,17 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->maxContentWidth(Width::Full)
+            ->sidebarCollapsibleOnDesktop()
+            ->breadcrumbs(false)
+            // tabela rola por dentro, com cabeçalho fixo, em vez de rolar a página inteira
+            ->renderHook(PanelsRenderHook::STYLES_AFTER, fn () => new HtmlString(<<<'HTML'
+                <style>
+                    .fi-ta-content-ctn { max-height: calc(100dvh - 20rem); overflow-y: auto; }
+                    .fi-ta-table > thead > tr > th { position: sticky; top: 0; z-index: 10; background-color: var(--gray-50); }
+                    .dark .fi-ta-table > thead > tr > th { background-color: color-mix(in oklab, var(--gray-900), white 5%); }
+                </style>
+                HTML))
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -39,7 +52,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
