@@ -32,7 +32,7 @@ class LeadsTable
             ->columns([
                 TextColumn::make('name')->label('Negócio')->searchable()->wrap()
                     ->description(fn (Lead $record) => $record->address),
-                TextInputColumn::make('greeting_name')->label('Saudação'),
+                TextInputColumn::make('greeting_name')->label('Saudação')->rules(['nullable', 'string', 'max:255']),
                 TextColumn::make('niche')->label('Nicho')->badge()->toggleable(),
                 TextColumn::make('phone_raw')->label('Telefone')->searchable(),
                 TextColumn::make('website_type')->label('Site')->badge()
