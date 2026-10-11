@@ -71,6 +71,18 @@ class CollectLeadsTest extends TestCase
         $this->assertSame('opt_out', $lead('optout')->discard_reason);
     }
 
+    public function test_drops_non_http_urls_from_google(): void
+    {
+        Http::fake(['places.googleapis.com/*' => ['places' => [
+            $this->place('evil', ['websiteUri' => 'javascript:alert(1)', 'googleMapsUri' => 'https://maps.google.com/?cid=1']),
+        ]]]);
+
+        $this->artisan('leads:buscar', ['query' => 'academia', '--sync' => true])->assertSuccessful();
+
+        $this->assertNull(Lead::sole()->website);
+        $this->assertSame('https://maps.google.com/?cid=1', Lead::sole()->maps_url);
+    }
+
     public function test_does_not_requalify_leads_already_in_outreach(): void
     {
         Lead::create(['google_place_id' => 'x', 'name' => 'X', 'niche' => 'academia', 'status' => LeadStatus::Enviado]);

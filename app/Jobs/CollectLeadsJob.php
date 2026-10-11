@@ -50,13 +50,13 @@ class CollectLeadsJob implements ShouldQueue
                 $lead->fill([
                     'name' => $place['displayName']['text'] ?? 'Sem nome',
                     'phone_raw' => $place['internationalPhoneNumber'] ?? null,
-                    'website' => $place['websiteUri'] ?? null,
+                    'website' => $this->safeUrl($place['websiteUri'] ?? null),
                     'rating' => $place['rating'] ?? null,
                     'ratings_count' => $place['userRatingCount'] ?? 0,
                     'address' => $place['formattedAddress'] ?? null,
                     'primary_type' => $place['primaryType'] ?? null,
                     'business_status' => $place['businessStatus'] ?? null,
-                    'maps_url' => $place['googleMapsUri'] ?? null,
+                    'maps_url' => $this->safeUrl($place['googleMapsUri'] ?? null),
                 ]);
 
                 // só requalifica quem ainda não entrou no funil de envio
@@ -77,6 +77,12 @@ class CollectLeadsJob implements ShouldQueue
         } while ($token && $pages < self::MAX_PAGES);
 
         $this->search->update(['status' => 'done']);
+    }
+
+    /** Dado de terceiro que vira link no painel: só aceita http(s), nunca javascript: e afins. */
+    private function safeUrl(?string $url): ?string
+    {
+        return $url && preg_match('#^https?://#i', $url) ? $url : null;
     }
 
     public function failed(?Throwable $e): void
