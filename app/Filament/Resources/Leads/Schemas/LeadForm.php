@@ -15,7 +15,7 @@ class LeadForm
             ->components([
                 TextInput::make('greeting_name')
                     ->label('Nome de saudação')
-                    ->helperText('Vai no {{1}} do template do WhatsApp.')
+                    ->helperText('Vai no "Olá, {nome}!" da mensagem do WhatsApp.')
                     ->maxLength(255),
                 Textarea::make('notes')->label('Notas')->rows(5)->columnSpanFull(),
             ]);

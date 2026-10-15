@@ -74,4 +74,15 @@ class PanelTest extends TestCase
 
         $this->assertSame('já é cliente', $lead->fresh()->discard_reason);
     }
+
+    public function test_whatsapp_click_marks_lead_as_contacted(): void
+    {
+        $lead = $this->lead(LeadStatus::Qualificado, ['phone_e164' => '5547991226162', 'is_mobile' => true]);
+
+        Livewire::test(ListLeads::class)
+            ->assertTableActionVisible('whatsapp', $lead)
+            ->call('markLeadContacted', $lead->id);
+
+        $this->assertSame(LeadStatus::Enviado, $lead->fresh()->status);
+    }
 }

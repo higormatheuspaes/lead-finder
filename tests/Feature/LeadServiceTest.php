@@ -52,4 +52,29 @@ class LeadServiceTest extends TestCase
         $this->assertSame('não gostei', $a->fresh()->discard_reason);
         $this->assertSame([LeadStatus::Descartado, 'repetido'], [$b->fresh()->status, $b->fresh()->discard_reason]);
     }
+
+    public function test_whatsapp_url_has_phone_and_message_with_greeting_name(): void
+    {
+        config(['leads.whatsapp_message' => 'Olá, {nome}! Tudo bem? *Himap*']);
+        $lead = $this->lead(LeadStatus::Qualificado, ['phone_e164' => '5547991226162', 'greeting_name' => 'FJ Jr Academia']);
+
+        $url = app(LeadService::class)->whatsappUrl($lead);
+
+        $this->assertStringStartsWith('https://wa.me/5547991226162?text=', $url);
+        $this->assertSame('Olá, FJ Jr Academia! Tudo bem? *Himap*', rawurldecode(substr($url, strpos($url, '=') + 1)));
+    }
+
+    public function test_mark_contacted_does_not_downgrade_leads_ahead_in_funnel(): void
+    {
+        $qualified = $this->lead(LeadStatus::Qualificado);
+        $replied = $this->lead(LeadStatus::Respondeu);
+
+        app(LeadService::class)->markContacted($qualified);
+        app(LeadService::class)->markContacted($replied);
+
+        $this->assertSame(LeadStatus::Enviado, $qualified->fresh()->status);
+        $this->assertNotNull($qualified->fresh()->contacted_at);
+        $this->assertSame(LeadStatus::Respondeu, $replied->fresh()->status);
+        $this->assertNull($replied->fresh()->contacted_at);
+    }
 }

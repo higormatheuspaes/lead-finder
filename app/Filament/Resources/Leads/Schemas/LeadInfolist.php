@@ -31,7 +31,7 @@ class LeadInfolist
                     ->schema([
                         TextEntry::make('status')->badge(),
                         TextEntry::make('score'),
-                        TextEntry::make('problem')->label('Problema (vai no template)')->placeholder('—'),
+                        TextEntry::make('problem')->label('Problema')->placeholder('—'),
                         TextEntry::make('discard_reason')->label('Motivo do descarte')->placeholder('—'),
                         TextEntry::make('contacted_at')->label('Contatado em')->dateTime('d/m/Y H:i')->placeholder('—'),
                         TextEntry::make('replied_at')->label('Respondeu em')->dateTime('d/m/Y H:i')->placeholder('—'),

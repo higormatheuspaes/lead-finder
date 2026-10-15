@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Leads\Pages;
 use App\Enums\LeadStatus;
 use App\Filament\Resources\Leads\LeadResource;
 use App\Models\Lead;
+use App\Services\LeadService;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,6 +13,12 @@ use Illuminate\Database\Eloquent\Builder;
 class ListLeads extends ListRecords
 {
     protected static string $resource = LeadResource::class;
+
+    /** Chamado pelo clique no botão WhatsApp da tabela (o link abre no navegador, isto só registra o envio). */
+    public function markLeadContacted(int $leadId, LeadService $leads): void
+    {
+        $leads->markContacted(Lead::findOrFail($leadId));
+    }
 
     public function getTabs(): array
     {

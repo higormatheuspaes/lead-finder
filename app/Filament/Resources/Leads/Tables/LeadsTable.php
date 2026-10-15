@@ -65,8 +65,9 @@ class LeadsTable
                     ->label('WhatsApp')
                     ->icon(Heroicon::OutlinedChatBubbleLeftRight)
                     ->color('success')
-                    ->url(fn (Lead $record) => "https://wa.me/{$record->phone_e164}", true)
-                    ->visible(fn (Lead $record) => $record->is_mobile),
+                    ->url(fn (Lead $record, LeadService $leads) => $leads->whatsappUrl($record), true)
+                    ->alpineClickHandler(fn (Lead $record) => "\$wire.markLeadContacted({$record->getKey()})")
+                    ->visible(fn (Lead $record) => $record->is_mobile && $record->status !== LeadStatus::OptOut),
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
@@ -75,6 +76,12 @@ class LeadsTable
                         ->icon(Heroicon::OutlinedMapPin)
                         ->url(fn (Lead $record) => $record->maps_url, true)
                         ->visible(fn (Lead $record) => filled($record->maps_url)),
+                    Action::make('respondeu')
+                        ->label('Marcar respondeu')
+                        ->icon(Heroicon::OutlinedChatBubbleBottomCenterText)
+                        ->color('info')
+                        ->visible(fn (Lead $record) => in_array($record->status, [LeadStatus::Enviado, LeadStatus::Entregue, LeadStatus::Lido], true))
+                        ->action(fn (Lead $record, LeadService $leads) => $leads->markReplied($record)),
                     Action::make('convertido')
                         ->label('Marcar convertido')
                         ->icon(Heroicon::OutlinedTrophy)
