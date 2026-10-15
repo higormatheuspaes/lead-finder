@@ -7,8 +7,10 @@ RUN install-php-extensions intl bcmath
 WORKDIR /var/www/html
 COPY --chown=www-data:www-data . .
 
-# garante pastas graváveis mesmo quando o código vem do Windows (lá as permissões se perdem no COPY)
-RUN mkdir -p storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache \
+# garante pastas graváveis mesmo quando o código vem do Windows/OneDrive (lá as pastas chegam sem permissão de escrita no COPY)
+# o app inteiro precisa ser gravável pelo dono: o filament:upgrade publica assets em public/
+RUN chmod -R u+rwX,go+rX . \
+    && mkdir -p storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rwX storage bootstrap/cache
 
