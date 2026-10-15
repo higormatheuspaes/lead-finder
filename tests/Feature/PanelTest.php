@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\LeadStatus;
+use App\Filament\Resources\Leads\Pages\EditLead;
 use App\Filament\Resources\Leads\Pages\ListLeads;
 use App\Filament\Resources\Leads\Pages\ViewLead;
 use App\Filament\Resources\Searches\Pages\ManageSearches;
@@ -84,5 +85,31 @@ class PanelTest extends TestCase
             ->call('markLeadContacted', $lead->id);
 
         $this->assertSame(LeadStatus::Enviado, $lead->fresh()->status);
+    }
+
+    public function test_editing_phone_normalizes_and_requalifies(): void
+    {
+        $lead = $this->lead(LeadStatus::Descartado, [
+            'phone_raw' => '+55 47 3322-1100', 'discard_reason' => 'telefone_fixo', 'business_status' => 'OPERATIONAL',
+        ]);
+
+        Livewire::test(EditLead::class, ['record' => $lead->id])
+            ->fillForm(['phone_raw' => '47 99647-5752'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $lead->refresh();
+        $this->assertSame(['5547996475752', true], [$lead->phone_e164, $lead->is_mobile]);
+        $this->assertSame(LeadStatus::Qualificado, $lead->status); // sem site = 40 pontos
+    }
+
+    public function test_editing_rejects_invalid_phone(): void
+    {
+        $lead = $this->lead(LeadStatus::Qualificado, ['phone_raw' => '+55 47 99122-6162']);
+
+        Livewire::test(EditLead::class, ['record' => $lead->id])
+            ->fillForm(['phone_raw' => '1234'])
+            ->call('save')
+            ->assertHasFormErrors(['phone_raw']);
     }
 }

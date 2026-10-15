@@ -24,4 +24,11 @@ class PhoneTest extends TestCase
             'incompleto' => ['+55 47 9912', null, false],
         ];
     }
+
+    public function test_normalizes_typed_input_assuming_brazil(): void
+    {
+        $this->assertSame(['5547996475752', true], Phone::normalize('47 99647-5752'));
+        $this->assertSame(['5547996475752', true], Phone::normalize('+55 (47) 99647-5752'));
+        $this->assertSame([null, false], Phone::normalize('99647-5752')); // sem DDD
+    }
 }

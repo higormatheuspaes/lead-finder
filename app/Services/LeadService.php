@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\LeadStatus;
 use App\Models\Lead;
+use App\Support\Phone;
 use Illuminate\Support\Collection;
 
 class LeadService
@@ -22,6 +23,27 @@ class LeadService
     public function discard(Lead|Collection $leads, string $reason): void
     {
         Collection::wrap($leads)->each->update(['status' => LeadStatus::Descartado, 'discard_reason' => $reason]);
+    }
+
+    /**
+     * Salva a edição manual do lead. Telefone novo é normalizado e, se o lead ainda não entrou no funil
+     * de envio, requalificado (ex.: descartado por telefone fixo que ganhou um celular).
+     *
+     * @param  array{greeting_name?: ?string, notes?: ?string, phone_raw?: ?string}  $data
+     */
+    public function updateDetails(Lead $lead, array $data): void
+    {
+        $lead->fill($data);
+
+        if ($lead->isDirty('phone_raw')) {
+            [$lead->phone_e164, $lead->is_mobile] = Phone::normalize((string) $lead->phone_raw);
+
+            if (in_array($lead->status, LeadStatus::REQUALIFIABLE, true)) {
+                $this->qualifier->apply($lead);
+            }
+        }
+
+        $lead->save();
     }
 
     /** Link que abre o WhatsApp do usuário com a mensagem pronta para este lead. */

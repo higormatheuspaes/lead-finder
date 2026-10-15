@@ -5,15 +5,17 @@ namespace App\Support;
 class Phone
 {
     /**
-     * Recebe o telefone internacional do Google ("+55 47 99122-6162").
+     * Aceita o telefone internacional do Google ("+55 47 99122-6162") ou o digitado no painel
+     * sem "+", que é tratado como brasileiro ("47 99647-5752").
      *
      * shortcut: só entende números do Brasil (+55); estrangeiros viram null. Ampliar quando prospectar fora.
      *
      * @return array{0: ?string, 1: bool} [e164 sem "+", é celular?]
      */
-    public static function normalize(?string $international): array
+    public static function normalize(?string $phone): array
     {
-        $digits = preg_replace('/\D/', '', (string) $international);
+        $phone = trim((string) $phone);
+        $digits = preg_replace('/\D/', '', str_starts_with($phone, '+') ? $phone : "55{$phone}");
 
         if (! str_starts_with($digits, '55')) {
             return [null, false];
